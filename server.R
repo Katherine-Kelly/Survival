@@ -1,0 +1,34 @@
+library(shiny)
+library(survival)
+
+BRCA <- read.csv('BRCA_subset_median.csv')
+surv_object <- Surv(time = BRCA$DSS.time, event = BRCA$DSS)
+
+shinyServer(function(input, output) {
+    
+    # Caption will show below the graph; based on which protein you select
+    output$caption <- renderText({
+        paste("Kaplan Meier Survival Graph of", input$Protein_ID, sep="\n")
+    })
+    
+    # Running the survival function
+    runSur <- reactive({
+        survfit(as.formula(paste("Surv(DSS.time,DSS) ~ ",paste(input$Protein_ID))),data=BRCA)
+    })
+    
+    output$plot_survival <- renderPlot({
+        plot(runSur())
+        })
+    
+    
+    output$summary <- renderPrint({
+        surv_object <- Surv(time = BRCA$OS.time, event = BRCA$OS)
+        fit <- survfit(surv_object ~ input$Protein_ID, data=BRCA)
+        summary(fit)
+    })
+    
+    output$raw_data <- renderTable({
+        BRCA
+    }, include.rownames = FALSE)
+    
+})
