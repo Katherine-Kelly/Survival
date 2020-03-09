@@ -1,5 +1,7 @@
 library(shiny)
 library(survival)
+library(survminer)
+library(ggplot2)
 
 BRCA <- read.csv('BRCA_subset_median.csv')
 surv_object <- Surv(time = BRCA$DSS.time, event = BRCA$DSS)
@@ -14,11 +16,12 @@ shinyServer(function(input, output) {
     # Running the survival function
     runSur <- reactive({
         survfit(as.formula(paste("Surv(DSS.time,DSS) ~ ",paste(input$Protein_ID))),data=BRCA)
+        
     })
     
     output$plot_survival <- renderPlot({
-        plot(runSur())
-        })
+        plot(runSur(), col=c('red', 'blue'), xlab='Time (weeks)', ylab='Probability of Survival', pch=5)
+    })
     
     
     output$summary <- renderPrint({
