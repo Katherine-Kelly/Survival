@@ -72,7 +72,7 @@ ui <- fluidPage(
                      p(strong("Overview")),
                      br(),
                      p("SRvival is a user-friendly survival analysis toolbox created using the R Shiny platform which allows customised evaluation of prognostic markers. Users can investigate associations between protein expression and patient survival in breast cancer and its molecular subtypes, and can also upload their own datasets for analysis. SRvival allows separate analysis across four survival endpoints - overall survival, disease-free survival, progression-free interval and disease-free interval. Data can be stratified into LuminalA, LuminalB, HER2+, Basal and Normal-like subtypes if desired."), 
-                     p("SRvival plots are based on data from the publically available", strong("TCGA Breast dataset"), ", which contains survival and protein expression information for", strong("221 proteins"), "in", strong("874 patients."), "Data is stratified into high and low expression groups based on median expression for each protein. Kaplan Meier survival models and log rank p-values are calculated using the R package,", em("survival.")),
+                     p("SRvival plots are based on data from the publically available", strong("TCGA Breast dataset"), ", which contains survival and protein expression information for", strong("221 proteins"), "in", strong("874 patients."),"Protein expression was quantified using reverse phase protein arrays. Data is stratified into high and low expression groups based on median expression for each protein. Kaplan Meier survival models and log rank p-values are calculated using the R package,", em("survival.")),
                      br(),
                      p(strong("How do I upload a file?")),
                      p("Files in .csv format can be uploaded in the", strong("Custom Data"), "section. Each predictor variable (the genes or conditions of interest) should be represented in a column, and each individual represented by a row. Time and endpoint columns should be so named, as in the sample table below:"),
@@ -158,6 +158,7 @@ server <- function(input, output) {
     })
     
     output$subtypeKM <- renderPlot({
+        surv_object <- Surv(time = BRCA$OS.time, event = BRCA$OS)
         BRCA$subtype <- factor(BRCA$subtype, levels = c("Basal", "LumA", "LumB", "Her2"))
         fit <- survfit(surv_object ~ subtype, data=BRCA)
         plot(fit, col=c("blue", "purple", "turquoise", "seagreen"), xlab='Time (days)', ylab='Probability of Survival', lwd=2, main=c(paste("Kaplan Meier Plot of Suvival by Subtype"))) 
@@ -166,6 +167,7 @@ server <- function(input, output) {
     
     
     output$stageKM <- renderPlot({
+        surv_object <- Surv(time = BRCA$OS.time, event = BRCA$OS)
         fit <- survfit(surv_object ~ ajcc_pathologic_tumor_stage, data=BRCA)
         plot(fit, col=c("blue", "purple", "turquoise", "seagreen"), xlab='Time (days)', ylab='Probability of Survival', lwd=2, main=c(paste("Kaplan Meier Plot of Suvival by Stage"))) 
         legend(0,0.3, legend=c("Stage I", "Stage II", "Stage III", "Stage IV"), col=c("blue", "purple", "turquoise", "seagreen"),lty=1, lwd=4)
@@ -173,23 +175,22 @@ server <- function(input, output) {
     
     output$subtypeCox <- renderPlot({
         BRCA$subtype <- factor(BRCA$subtype, levels = c("Basal", "LumA", "LumB", "Her2"))
-        surv_object <- Surv(time = BRCA$DSS.time, event = BRCA$DSS)
-        fit.coxph <- coxph(Surv(DSS.time,DSS) ~ subtype, data = BRCA)
-        ggforest(fit.coxph, main="Hazard Ratio by Subtype")
+        fit.coxph <- coxph(Surv(time = BRCA$OS.time, event = BRCA$OS) ~ subtype, data = BRCA)
+        ggforest(fit.coxph, main="Hazard Ratio by Subtype", data=BRCA)
         
     })
     
     output$ageCox <- renderPlot({
-        surv_object <- Surv(time = BRCA$DSS.time, event = BRCA$DSS)
-        fit.coxph <- coxph(Surv(DSS.time,DSS) ~ age, data = BRCA)
-        ggforest(fit.coxph,main="Hazard Ratio by Age Group")
+        
+        fit.coxph <- coxph(Surv(time = BRCA$OS.time, event = BRCA$OS) ~ age, data = BRCA)
+        ggforest(fit.coxph,main="Hazard Ratio by Age Group", data=BRCA)
         
     })
     
     output$stageCox <- renderPlot({
-        surv_object <- Surv(time = BRCA$DSS.time, event = BRCA$DSS)
-        fit.coxph <- coxph(Surv(DSS.time,DSS) ~ ajcc_pathologic_tumor_stage, data = BRCA)
-        ggforest(fit.coxph, main="Hazard Ratio by Tumour Stage")
+        
+        fit.coxph <- coxph(Surv(time = BRCA$OS.time, event = BRCA$OS) ~ ajcc_pathologic_tumor_stage, data = BRCA)
+        ggforest(fit.coxph, main="Hazard Ratio by Tumour Stage", data=BRCA)
     })
         
     
