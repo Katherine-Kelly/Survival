@@ -1,4 +1,4 @@
-# SRvival
+# SRvival: A Shiny R Survival Analysis Toolbox
 
 SRvival is a user-friendly survival analysis toolbox created using the R Shiny platform which allows customised evaluation of prognostic markers. Users can investigate associations between protein expression and patient survival in breast cancer and its molecular subtypes, and can also upload their own datasets for analysis. In the "TCGA Data" section, SRvival allows separate analysis across four survival endpoints - overall survival, disease-free survival, progression-free interval and disease-free interval. Data can be stratified into LuminalA, LuminalB, HER2+, Basal and Normal-like subtypes if desired.
 
